@@ -1,4 +1,4 @@
-package main
+package controllers
 
 import (
 	"context"
@@ -11,16 +11,27 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-// reconcileReplicaSet reconciles ReplicaSets
-type reconcileReplicaSet struct {
+// DeploymentController reconciles Deployments
+type DeploymentController struct {
 	// client can be used to retrieve objects from the APIServer.
 	client client.Client
 }
 
-func (r *reconcileReplicaSet) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
-	log := log.FromContext(ctx)
+func NewDeploymentController(client client.Client) reconcile.Reconciler{
+  return &DeploymentController{
+    client: client,
+  }
+}
 
-	// Fetch the ReplicaSet from the cache
+func (r *DeploymentController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+  log := log.FromContext(ctx)
+
+  if request.Namespace == "kube-system" {
+    log.Info("ignoring the Deployment in kube-system Namespace", "name", request.Name)
+    return reconcile.Result{}, nil
+  }
+
+	// Fetch the Deployment from the cache
 	deploy := &appsv1.Deployment{}
 	err := r.client.Get(ctx, request.NamespacedName, deploy)
 	if errors.IsNotFound(err) {
@@ -32,7 +43,6 @@ func (r *reconcileReplicaSet) Reconcile(ctx context.Context, request reconcile.R
 		return reconcile.Result{}, fmt.Errorf("could not fetch Deployment: %+v", err)
 	}
 
-	// Print the ReplicaSet
 	log.Info("Reconciling Deployment", "name", deploy.Name)
 
 	return reconcile.Result{}, nil

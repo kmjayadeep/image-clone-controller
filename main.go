@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+  "github.com/kmjayadeep/image-clone-controller/controllers"
 	appsv1 "k8s.io/api/apps/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -31,26 +32,35 @@ func main() {
 	}
 
 	// Setup a new controller to reconcile ReplicaSets
-	entryLog.Info("Setting up controller")
-	c, err := controller.New("deployment-controller", mgr, controller.Options{
-		Reconciler: &reconcileReplicaSet{client: mgr.GetClient()},
+	entryLog.Info("Setting up deployment controller")
+	deployCtl, err := controller.New("deployment-controller", mgr, controller.Options{
+		Reconciler: controllers.NewDeploymentController(mgr.GetClient()),
 	})
 	if err != nil {
-		entryLog.Error(err, "unable to set up controller")
+		entryLog.Error(err, "unable to set up deployment controller")
 		os.Exit(1)
 	}
 
 	// Watch Deployments and enqueue Deployment object key
-	if err := c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForObject{}); err != nil {
+	if err := deployCtl.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForObject{}); err != nil {
 		entryLog.Error(err, "unable to watch Deployments")
 		os.Exit(1)
 	}
 
-	// Watch Daemonsets and enqueue Daemonset object key
-	if err := c.Watch(&source.Kind{Type: &appsv1.DaemonSet{}}, &handler.EnqueueRequestForObject{}); err != nil {
-		entryLog.Error(err, "unable to watch Daemonsets")
+	entryLog.Info("Setting up daemonset controller")
+	dsCtl, err := controller.New("daemonset-controller", mgr, controller.Options{
+		Reconciler: controllers.NewDaemonSetController(mgr.GetClient()),
+	})
+	if err != nil {
+		entryLog.Error(err, "unable to set up daemonset controller")
 		os.Exit(1)
 	}
+
+	// Watch Daemonsets and enqueue Daemonset object key
+  if err := dsCtl.Watch(&source.Kind{Type: &appsv1.DaemonSet{}}, &handler.EnqueueRequestForObject{}); err != nil {
+    entryLog.Error(err, "unable to watch Daemonsets")
+    os.Exit(1)
+  }
 
 	entryLog.Info("starting manager")
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
