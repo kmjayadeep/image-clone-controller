@@ -17,19 +17,19 @@ type DeploymentController struct {
 	client client.Client
 }
 
-func NewDeploymentController(client client.Client) reconcile.Reconciler{
-  return &DeploymentController{
-    client: client,
-  }
+func NewDeploymentController(client client.Client) reconcile.Reconciler {
+	return &DeploymentController{
+		client: client,
+	}
 }
 
 func (r *DeploymentController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
-  log := log.FromContext(ctx)
+	log := log.FromContext(ctx)
 
-  if request.Namespace == "kube-system" {
-    log.Info("ignoring the Deployment in kube-system Namespace", "name", request.Name)
-    return reconcile.Result{}, nil
-  }
+	if request.Namespace == "kube-system" {
+		log.Info("ignoring the Deployment in kube-system Namespace", "name", request.Name)
+		return reconcile.Result{}, nil
+	}
 
 	// Fetch the Deployment from the cache
 	deploy := &appsv1.Deployment{}
@@ -44,6 +44,18 @@ func (r *DeploymentController) Reconcile(ctx context.Context, request reconcile.
 	}
 
 	log.Info("Reconciling Deployment", "name", deploy.Name)
+
+	podSpec := deploy.Spec.Template.Spec
+
+	changed, err := reconcilePod(&podSpec)
+
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if changed {
+		return reconcile.Result{Requeue: true}, nil
+	}
 
 	return reconcile.Result{}, nil
 }

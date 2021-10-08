@@ -17,19 +17,19 @@ type DaemonSetController struct {
 	client client.Client
 }
 
-func NewDaemonSetController(client client.Client) reconcile.Reconciler{
-  return &DaemonSetController {
-    client: client,
-  }
+func NewDaemonSetController(client client.Client) reconcile.Reconciler {
+	return &DaemonSetController{
+		client: client,
+	}
 }
 
 func (r *DaemonSetController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	log := log.FromContext(ctx)
 
-  if request.Namespace == "kube-system" {
-    log.Info("ignoring the Deployment in kube-system Namespace", "name", request.Name)
-    return reconcile.Result{}, nil
-  }
+	if request.Namespace == "kube-system" {
+		log.Info("ignoring the Deployment in kube-system Namespace", "name", request.Name)
+		return reconcile.Result{}, nil
+	}
 
 	// Fetch the DaemonSet from the cache
 	ds := &appsv1.DaemonSet{}
