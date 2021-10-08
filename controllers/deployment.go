@@ -27,7 +27,12 @@ func (r *DeploymentController) Reconcile(ctx context.Context, request reconcile.
 	log := log.FromContext(ctx)
 
 	if request.Namespace == "kube-system" {
-		log.Info("ignoring the Deployment in kube-system Namespace", "name", request.Name)
+		// log.Info("ignoring the Deployment in kube-system Namespace", "name", request.Name)
+		return reconcile.Result{}, nil
+	}
+
+	if request.Namespace != "default" {
+		// log.Info("ignoring the Deployment not in default Namespace", "name", request.Name)
 		return reconcile.Result{}, nil
 	}
 
@@ -45,18 +50,26 @@ func (r *DeploymentController) Reconcile(ctx context.Context, request reconcile.
 
 	log.Info("Reconciling Deployment", "name", deploy.Name)
 
-	podSpec := deploy.Spec.Template.Spec
+	podSpec := &deploy.Spec.Template.Spec
 
-	changed, err := reconcilePod(ctx, &podSpec)
+	changed, err := reconcilePod(ctx, podSpec)
 
 	if err != nil {
+		log.Error(err, "unable to reconcile pod spec")
 		return reconcile.Result{}, err
 	}
 
 	if changed {
-		log.Info("changed", "new spec", podSpec)
-		return reconcile.Result{}, nil
-		// return reconcile.Result{Requeue: true}, nil
+		log.Info("deployment spec updated", "new spec", podSpec)
+
+		err = r.client.Update(ctx, deploy)
+
+		if err != nil {
+			log.Error(err, "unable to update deployment")
+			return reconcile.Result{}, err
+		}
+
+		return reconcile.Result{Requeue: true}, nil
 	}
 
 	return reconcile.Result{}, nil
