@@ -54,7 +54,9 @@ func (r *DeploymentController) Reconcile(ctx context.Context, request reconcile.
 	}
 
 	if changed {
-		return reconcile.Result{Requeue: true}, nil
+		log.Info("changed", "new spec", podSpec)
+		return reconcile.Result{}, nil
+		// return reconcile.Result{Requeue: true}, nil
 	}
 
 	return reconcile.Result{}, nil
