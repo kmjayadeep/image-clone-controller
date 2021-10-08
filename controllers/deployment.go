@@ -47,7 +47,7 @@ func (r *DeploymentController) Reconcile(ctx context.Context, request reconcile.
 
 	podSpec := deploy.Spec.Template.Spec
 
-	changed, err := reconcilePod(&podSpec)
+	changed, err := reconcilePod(ctx, &podSpec)
 
 	if err != nil {
 		return reconcile.Result{}, err
