@@ -20,3 +20,4 @@ spec:
       containers:
       - image: repo.treescale.com/kmjayadeep/image-clone-controller:latest
         name: image-clone-controller
+        imagePullPolicy: Always

@@ -31,6 +31,10 @@ func reconcilePod(ctx context.Context, podSpec *corev1.PodSpec) (bool, error) {
 		}
 
 		image, err := backupImage(ctx, c.Image)
+		if err != nil {
+			return false, err
+		}
+
 		podSpec.Containers[i].Image = image
 		changed = true
 	}
@@ -47,6 +51,10 @@ func reconcilePod(ctx context.Context, podSpec *corev1.PodSpec) (bool, error) {
 		}
 
 		image, err := backupImage(ctx, c.Image)
+		if err != nil {
+			return false, err
+		}
+
 		podSpec.InitContainers[i].Image = image
 		changed = true
 	}
@@ -63,6 +71,10 @@ func reconcilePod(ctx context.Context, podSpec *corev1.PodSpec) (bool, error) {
 		}
 
 		image, err := backupImage(ctx, c.Image)
+		if err != nil {
+			return false, err
+		}
+
 		podSpec.EphemeralContainers[i].Image = image
 		changed = true
 	}
