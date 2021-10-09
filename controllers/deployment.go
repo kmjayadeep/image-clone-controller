@@ -31,11 +31,6 @@ func (r *DeploymentController) Reconcile(ctx context.Context, request reconcile.
 		return reconcile.Result{}, nil
 	}
 
-	if request.Namespace != "default" {
-		// log.Info("ignoring the Deployment not in default Namespace", "name", request.Name)
-		return reconcile.Result{}, nil
-	}
-
 	// Fetch the Deployment from the cache
 	deploy := &appsv1.Deployment{}
 	err := r.client.Get(ctx, request.NamespacedName, deploy)

@@ -45,5 +45,27 @@ func (r *DaemonSetController) Reconcile(ctx context.Context, request reconcile.R
 
 	log.Info("Reconciling Daemonset", "name", ds.Name)
 
+	podSpec := &ds.Spec.Template.Spec
+
+	changed, err := reconcilePod(ctx, podSpec)
+
+	if err != nil {
+		log.Error(err, "unable to reconcile pod spec")
+		return reconcile.Result{}, err
+	}
+
+	if changed {
+		log.Info("daemonset spec updated", "new spec", podSpec)
+
+		err = r.client.Update(ctx, ds)
+
+		if err != nil {
+			log.Error(err, "unable to update daemonset")
+			return reconcile.Result{}, err
+		}
+
+		return reconcile.Result{}, nil
+	}
+
 	return reconcile.Result{}, nil
 }

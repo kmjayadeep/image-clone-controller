@@ -87,6 +87,8 @@ func backupImage(ctx context.Context, image string) (string, error) {
 
 	crane.Tag(image, backupImage)
 
+	log.Info("pushing image to backup registry", "old", image, "backupImage", backupImage)
+
 	img, err := remote.Image(ref)
 	if err != nil {
 		log.Error(err, "Unable to parse image")
