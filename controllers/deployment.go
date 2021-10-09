@@ -69,7 +69,7 @@ func (r *DeploymentController) Reconcile(ctx context.Context, request reconcile.
 			return reconcile.Result{}, err
 		}
 
-		return reconcile.Result{Requeue: true}, nil
+		return reconcile.Result{}, nil
 	}
 
 	return reconcile.Result{}, nil
