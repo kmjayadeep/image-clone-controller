@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: image-clone-controller-imanager
+  name: image-clone-controller-imanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-clone-controller-imanager
+  template:
+    metadata:
+      labels:
+        app: image-clone-controller-imanager
+    spec:
+      serviceAccount: image-clone-controller
+      imagePullSecrets:
+      - name: registry-secret
+      containers:
+      - image: repo.treescale.com/kmjayadeep/image-clone-controller:latest
+        name: image-clone-controller
