@@ -1,9 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: image-clone-controller
+spec: {}
+status: {}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: image-clone-controller-imanager
-  name: image-clone-controller-imanager
+    app: image-clone-controller-manager
+  name: image-clone-controller-manager
+  namespace: image-clone-controller
 spec:
   replicas: 1
   selector:
